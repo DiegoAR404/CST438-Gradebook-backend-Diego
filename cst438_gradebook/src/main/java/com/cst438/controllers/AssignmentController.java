@@ -33,6 +33,9 @@ public class AssignmentController {
 	@Autowired
 	CourseRepository courseRepository;
 	
+	@Autowired
+	Assignment assignment;
+	
 	@GetMapping("/assignment")
 	public AssignmentDTO[] getAllAssignmentsForInstructor() {
 		// get all assignments for this instructor
@@ -56,39 +59,103 @@ public class AssignmentController {
 	
 	// create a new assignment
 	@PostMapping("/assignment")
-	public AssignmentDTO[] createAssignments(@RequestBody AssignmentDTO assignmentDTO) {
-		//create a new assignment for instructor
-		// the following needs to be changed.
+	public int createAssignment(@RequestBody AssignmentDTO assignmentDTO) {
 		String instructorEmail = "dwisneski@csumb.edu";  // user name (should be instructor's email) 
-		List<Assignment> assignments = assignmentRepository.findByEmail(instructorEmail);
-		AssignmentDTO[] result = new AssignmentDTO[assignments.size()];
-		for (int i=0; i<assignments.size(); i++) {
-			Assignment as = assignments.get(i);
-			AssignmentDTO dto = new AssignmentDTO(
-					as.getId(), 
-					as.getName(), 
-					as.getDueDate().toString(), 
-					as.getCourse().getTitle(), 
-					as.getCourse().getCourse_id());
-			result[i]=dto;
-		}
-		return result;
+		 
+			Course c  = courseRepository.findById(assignmentDTO.courseId()).orElse(null);
+			if(!c.getInstructor().equals(instructorEmail) || c == null) {
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email already Exist");
+			}
+			
+			Assignment assignment = new Assignment();
+			assignment.setCourse(c);
+			assignment.setDueDate(java.sql.Date.valueOf(assignmentDTO.dueDate()));
+			assignment.setName(assignmentDTO.assignmentName());
+			assignmentRepository.save(assignment);
+		return assignment.getId();
 		
 	}
+	
+	// retrieve the one assignment
+	@GetMapping("assignment/{id}")
+	public AssignmentDTO getAssignment(@PathVariable("id") int id) {
+		Assignment assignment = assignmentRepository.findById(id).orElse(null);
+		String instructorEmail = "dwisneski@csumb.edu";  // user name (should be instructor's email) 
+		
+		if( assignment == null) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "NOT_FOUND");	
+		}
+		
+		if(assignment.getCourse().getInstructor().equals(instructorEmail)) {
+			AssignmentDTO aDTO = new AssignmentDTO(assignment.getId(), assignment.getName(), assignment.getDueDate().toString(), assignment.getCourse().getTitle(), assignment.getCourse().getCourse_id());
+		return aDTO;
+		
+		}
+		throw new ResponseStatusException(HttpStatus.FORBIDDEN, "FORBIDDEN");
+	}
+	
+	
+		
+	
 	// delete an assignment
 	//  DELETE  /course/12389
 	//  DELETE  /course/12389?force=yes
 
 	@DeleteMapping("/assignment/{id}")
 	public void deleteAssignment(@PathVariable("id") int id,  
-								 @RequestParam("force") Optional<String> force) {
+			@RequestParam("force") Optional<String> force) {
 	// delete code here.
+		String instructorEmail = "dwisneski@csumb.edu";  // user name (should be instructor's email)
+		// if assignment exists
+		Assignment assignment = assignmentRepository.findById(id).orElse(null);
+		if(assignment == null) {
+			return;
+		}
+		
+		if(!assignment.getCourse().getInstructor().equals(instructorEmail)) {
+
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "FORBIDDEN");
+		
+		}
+		
+		if(assignment.getAssignmentGrades().isEmpty()) {
+			assignmentRepository.deleteById(id);
+		} 
+		
+		else {
+			// 
+			if(force.isEmpty()) {
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "no force");
+			}
+			else 
+				assignmentRepository.deleteById(id);
+			
+		}
+		
+		assignmentRepository.deleteById(id);
+		
+		
 	}
 	
-	// update assignment
-	@PutMapping("/assignment/{id}")
-	public void updateCourse(@RequestBody AssignmentDTO assignmentDTO) {
+	// update assignment - combine post and get
+	@PutMapping("/assignment/update/{id}")
+	public void updateCourse(@RequestBody AssignmentDTO assignmentDTO, @PathVariable("id") int id) {
 	//implement update here
+		String instructorEmail = "dwisneski@csumb.edu";  // user name (should be instructor's email) 
+		Assignment a = assignmentRepository.findById(id).orElse(null);
+		if(a == null) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "NOT_FOUND");
+		}
+		
+		if(!assignment.getCourse().getInstructor().equals(instructorEmail)) {
+
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "NOT_FOUND");
+		
+		}
+		
+		assignment.setDueDate(java.sql.Date.valueOf(assignmentDTO.dueDate()));
+		assignment.setName(assignmentDTO.assignmentName());
+		assignmentRepository.save(assignment);
 		
 	}
 	
