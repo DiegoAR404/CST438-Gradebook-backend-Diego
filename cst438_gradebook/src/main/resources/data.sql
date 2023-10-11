@@ -6,7 +6,8 @@ INSERT INTO course (year, semester, course_id, title, instructor)  VALUES
 (2020,'Fall',31045,'CST 363 - Introduction to Database Systems','dwisneski@csumb.edu'),
 (2020,'Fall',31249,'CST 237 - Intro to Computer Architecture','sislam@csumb.edu'),
 (2020,'Fall',31253,'BUS 307 - Finance','hwieland@csumb.edu'),
-(2020,'Fall',31747,'CST 238 - Introduction to Data Structures','jgross@csumb.edu')
+(2020,'Fall',31747,'CST 238 - Introduction to Data Structures','jgross@csumb.edu'),
+(2021,'Fall',40443, 'CST 123 - Intro to Testing','dra@csumb.edu')
 ;
 
 insert into assignment (id, due_date, name, course_id) values 
@@ -18,7 +19,8 @@ insert into enrollment (id, student_email, student_name, course_id)  values
 (1, 'test@csumb.edu', 'test', 31045),
 (2, 'dwisneski@csumb.edu', 'david', 31045),
 (3, 'trebold@csumb.edu', 'tom', 31045),
-(4, 'test4@csumb.edu', 'test4', 31045)
+(4, 'test4@csumb.edu', 'test4', 31045),
+(5,'trebold@csumb.edu', 'tom', 40443)
 ; 
 
 insert into assignment_grade (score, assignment_id, enrollment_id) values 

@@ -25,6 +25,12 @@ public class Assignment {
 	@OneToMany(mappedBy="assignment")
 	private List<AssignmentGrade> assignmentGrades;
 	
+	public List<AssignmentGrade> getAssignmentGrades() {
+		return assignmentGrades;
+	}
+	public void setAssignmentGrades(List<AssignmentGrade> assignmentGrades) {
+		this.assignmentGrades = assignmentGrades;
+	}
 	private String name;
 	private Date dueDate;
 
