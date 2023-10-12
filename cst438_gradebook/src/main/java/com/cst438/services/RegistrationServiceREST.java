@@ -51,10 +51,9 @@ public class RegistrationServiceREST implements RegistrationService {
 //	    courseRepository.save(c);
 	    
 		// create the url
-		registration_url = "/course/{course_id}/finalgrades";
-		String URL = registration_url.replace("{course_id}", String.valueOf(course_id));
-		// put request for url
-		restTemplate.put(URL, grades);
+		//registration_url = "/course/{course_id}";
+		
+		restTemplate.put(registration_url + "/" + course_id, grades);
 	
 	}
 	
