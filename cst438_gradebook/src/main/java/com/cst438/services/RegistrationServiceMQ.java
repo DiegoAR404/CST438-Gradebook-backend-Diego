@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+
 import com.cst438.domain.Course;
 import com.cst438.domain.FinalGradeDTO;
 import com.cst438.domain.CourseRepository;
@@ -52,21 +53,47 @@ public class RegistrationServiceMQ implements RegistrationService {
 	@RabbitListener(queues = "gradebook-queue")
 	@Transactional
 	public void receive(String message) {
-		
 		System.out.println("Gradebook has received: "+message);
+		EnrollmentDTO enrollmentDTO = fromJsonString(message, EnrollmentDTO.class);
+		System.out.append(enrollmentDTO.toString());
+		
+		Course course = courseRepository.findById(enrollmentDTO.courseId()).orElse(null);
+		if (course == null) {
+			System.out.println("Error. Student add to course. course not found " + enrollmentDTO.toString());
+		} else {
+			Enrollment enrollment = new Enrollment();
+			enrollment.setCourse(course);
+			enrollment.setStudentEmail(enrollmentDTO.studentEmail());
+			enrollment.setStudentName(enrollmentDTO.studentName());
+			enrollmentRepository.save(enrollment);
+			
+			System.out.println("End Recoieve Enrollment");
+		}
 
 		//TODO  deserialize message to EnrollmentDTO and update database
+		//convert message to enrollmentDTO 
+		// make a new enrollment DTO object using fromJsonString
+		// update the database
+		// make enrollment from values in DTO
+		// save enrollment in enrollmentRepository
 	}
 
 	/*
 	 * Send final grades to Registration Service 
 	 */
-	@Override
 	public void sendFinalGrades(int course_id, FinalGradeDTO[] grades) {
-		 
 		System.out.println("Start sendFinalGrades "+course_id);
+		String message = asJsonString(grades);
+		System.out.println(message);
+		rabbitTemplate.convertAndSend(registrationQueue.getName(), message);
+		System.out.println("Message sent.");
 
 		//TODO convert grades to JSON string and send to registration service
+		// make a json string from grades in finalDTO
+
+		// rabbitTemplate.convertAndSend(registrationQueue.getName(), message) (grab from lab)
+		
+		
 		
 	}
 	

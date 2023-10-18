@@ -39,21 +39,8 @@ public class RegistrationServiceREST implements RegistrationService {
 	public void sendFinalGrades(int course_id , FinalGradeDTO[] grades) { 
 		
 		//TODO use restTemplate to send final grades to registration service
-		// Throw exceptions
-//		String studentEmail = FinalGradeDTO.studentEmail();
-//		Course c = courseRepository.findById(course_id).orElse(null);
-//	    if (c==null || ! c.getClass().equals(studentEmail)) {
-//	    	throw  new ResponseStatusException( HttpStatus.NOT_FOUND, "assignment not found or not authorized "+id);
-//	    }
-//	    
-//	    c.setCourse_id(course_id);
-//	    c.setTitle(studentEmail);
-//	    courseRepository.save(c);
-	    
-		// create the url
-		//registration_url = "/course/{course_id}";
-		
 		restTemplate.put(registration_url + "/" + course_id, grades);
+		System.out.println("POST complete.");
 	
 	}
 	
@@ -75,23 +62,28 @@ public class RegistrationServiceREST implements RegistrationService {
 		// Receive message from registration service to enroll a student into a course.
 		
 		System.out.println("GradeBook addEnrollment "+enrollmentDTO);
+		Enrollment enrollment = new Enrollment();
+		Course course = courseRepository.findById(enrollmentDTO.courseId()).orElse(null);
+		if (course==null) {
+			System.out.println("Error. Student add to course. course not found "+enrollmentDTO.toString());
+			return null;
+		} else {
+			enrollment.setCourse(course);
+			enrollment.setStudentEmail(enrollmentDTO.studentEmail());
+			enrollment.setStudentName(enrollmentDTO.studentName());
+			enrollmentRepository.save(enrollment);
+			EnrollmentDTO response = new EnrollmentDTO(
+					enrollment.getId(), 
+					enrollment.getStudentEmail(), 
+					enrollment.getStudentName(), 
+					enrollment.getCourse().getCourse_id());
+			
+			//TODO remove following statement when complete.
+			//registration_url = "/enrollment";	
+			//String URL = registration_url;	
+			//EnrollmentDTO response = restTemplate.postForObject(URL, enrollmentDTO,EnrollmentDTO.class);
 		
-		// Throw Exceptions
-//		String studentEmail = enrollmentDTO.studentEmail();
-//		Course c = courseRepository.findById(enrollmentDTO.courseId()).orElse(null);
-//		if (c==null || ! c.getInstructor().equals(studentEmail)) {
-//			throw  new ResponseStatusException( HttpStatus.BAD_REQUEST, "course id not found or not authorized "+enrollmentDTO.courseId());
-//		}
-		
-		//TODO remove following statement when complete.
-		registration_url = "/enrollment";
-		
-		String URL = registration_url;
-		
-		EnrollmentDTO response = restTemplate.postForObject(URL, enrollmentDTO,EnrollmentDTO.class);
-		
-		return response;
-		
-	}
-
+			return response;
+			}
+		}
 }
