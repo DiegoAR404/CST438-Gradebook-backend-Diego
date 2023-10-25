@@ -22,6 +22,7 @@ import com.cst438.domain.AssignmentDTO;
 import com.cst438.domain.AssignmentRepository;
 import com.cst438.domain.Course;
 import com.cst438.domain.CourseRepository;
+import java.security.Principal;
 
 @RestController
 @CrossOrigin 
@@ -34,9 +35,12 @@ public class AssignmentController {
 	CourseRepository courseRepository;
 	
 	@GetMapping("/assignment")
-	public AssignmentDTO[] getAllAssignmentsForInstructor() {
+	public AssignmentDTO[] getAllAssignmentsForInstructor(Principal principal,
+			@RequestBody AssignmentDTO[] dto) {
+		System.out.println(result);
 		// get all assignments for this instructor
-		String instructorEmail = "dwisneski@csumb.edu";  // user name (should be instructor's email) 
+		//String instructorEmail = "dwisneski@csumb.edu";  // user name (should be instructor's email) 
+		
 		List<Assignment> assignments = assignmentRepository.findByEmail(instructorEmail);
 		AssignmentDTO[] result = new AssignmentDTO[assignments.size()];
 		for (int i=0; i<assignments.size(); i++) {
